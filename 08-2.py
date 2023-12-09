@@ -92,11 +92,11 @@ def load_input():
 
 def solve():
     starts, ends, route = load_input()
-    c = []
+    path_combinations = []
     for element in itertools.product(*[start.z_distances.values() for start in starts]):
-        c.append(element)
+        path_combinations.append(element)
 
-    return min(reduce(lcm, list(paths)) for paths in c)
+    return min(reduce(lcm, list(paths)) for paths in path_combinations)
 
 
 def lcm(a, b):
