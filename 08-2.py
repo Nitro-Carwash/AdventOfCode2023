@@ -8,29 +8,37 @@ class WastelandNode:
         self.symbol = symbol
         self.right = right
         self.left = left
-        self.z_distances = {}
+        self.z_distances = []
 
     def find_z_distances(self, route):
         cur = self
         depth = 0
-        seen = set()
-        cycle_detected = False
+        seen = {}
+        cycles_detected = 0
+        iterations = 0
 
-        while not cycle_detected:
+        while iterations < 100000:
             if cur.symbol in seen:
-                break
-            seen.add(cur.symbol)
+                cycles_detected += 1
+                if cycles_detected == 2:
+                    break
+                depth = seen[cur.symbol]
+                seen = {}
+
+            seen[cur.symbol] = depth
 
             for direction in route:
-                if cur.symbol.endswith('Z') and cur.symbol not in self.z_distances:
-                    self.z_distances[cur.symbol] = depth
-
+                # Don't start considering Z's until we've validated they're inside a cycle.
+                if cycles_detected == 1 and cur.symbol.endswith('Z') and cur.symbol not in self.z_distances:
+                    self.z_distances.append(depth)
                 depth += 1
 
                 if direction == 'L':
                     cur = cur.left
                 else:
                     cur = cur.right
+
+        iterations += 1
 
     def add_child(self, child):
         if self.left == child.symbol:
@@ -93,7 +101,7 @@ def load_input():
 def solve():
     starts, ends, route = load_input()
     path_combinations = []
-    for element in itertools.product(*[start.z_distances.values() for start in starts]):
+    for element in itertools.product(*[start.z_distances for start in starts]):
         path_combinations.append(element)
 
     return min(reduce(lcm, list(paths)) for paths in path_combinations)
