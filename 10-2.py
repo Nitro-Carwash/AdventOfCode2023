@@ -101,8 +101,11 @@ class PipeMap:
         for interior in interiors:
             map[interior[1]][interior[0]] = 'I'
 
-        with open('out10', 'w') as out_stream:
+        tile_replacements = {'L': '└', 'J': '┘', '7': '┐', 'F': '┌', 'S': 'S', '|': '|', '-': '-', '.': '.', 'I': 'I'}
+
+        with open('out10', 'w', encoding="utf-8") as out_stream:
             for row in map:
+                row = [tile_replacements[t] for t in row]
                 out_stream.write(str(''.join(row)) + '\n')
 
     @staticmethod
