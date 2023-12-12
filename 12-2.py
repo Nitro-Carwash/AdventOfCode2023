@@ -12,7 +12,7 @@ def load_input():
     return puzzle_input
 
 
-def get_possible_arrangements(record, sizes, start, memo, is_in_springs=False, skip_writing_to_memo=False):
+def get_possible_arrangements(record, sizes, start, memo, is_in_damaged=False, skip_writing_to_memo=False):
     if start >= len(record):
         return 1 if len(sizes) == 0 or (len(sizes) == 1 and sizes[0] == 0) else 0
 
@@ -27,17 +27,17 @@ def get_possible_arrangements(record, sizes, start, memo, is_in_springs=False, s
             next_sizes[0] -= 1
             arrangements = get_possible_arrangements(record, tuple(next_sizes), start + 1, memo, True)
     if record[start] == '.':
-        if not is_in_springs or (len(sizes) == 0 or sizes[0] == 0):
-            if is_in_springs and len(sizes) > 0:
+        if not is_in_damaged or (len(sizes) == 0 or sizes[0] == 0):
+            if is_in_damaged and len(sizes) > 0:
                 sizes = tuple(list(sizes)[1:])
             arrangements = get_possible_arrangements(record, sizes, start + 1, memo, False)
     if record[start] == '?':
         new_record = record.copy()
         new_record[start] = '.'
         # Skip memo because we don't want the '#' replacement to just return the lookup
-        arrangements += get_possible_arrangements(new_record, sizes, start, memo, is_in_springs, True)
+        arrangements += get_possible_arrangements(new_record, sizes, start, memo, is_in_damaged, True)
         new_record[start] = '#'
-        arrangements += get_possible_arrangements(new_record, sizes, start, memo, is_in_springs, False)
+        arrangements += get_possible_arrangements(new_record, sizes, start, memo, is_in_damaged, False)
 
     if not skip_writing_to_memo:
         if start not in memo:
