@@ -2,12 +2,8 @@ import re
 
 
 def load_input():
-    puzzle_input = []
     with open('in01', 'r') as in_stream:
-        for line in in_stream.readlines():
-            puzzle_input.append(line.strip())
-
-    return puzzle_input
+        return [line.strip() for line in in_stream.readlines()]
 
 
 def solve(puzzle_input):
