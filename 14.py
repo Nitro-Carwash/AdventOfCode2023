@@ -5,65 +5,47 @@ def load_input():
         return [list(line.strip()) for line in in_stream.readlines()]
 
 
-def tilt_platform(platform):
-    boulders_per_row = [0 for _ in range(len(platform))]
-    stopping_point_per_col = [0 for _ in range(len(platform[0]))]
-    for y in range(len(platform)):
-        for x in range(len(platform[0])):
+def tilt_platform(platform, outer_range, inner_range, transform_to_coords):
+    stopping_points = [outer_range.start for _ in inner_range]
+    step = outer_range.step
+    for i in outer_range:
+        for j in inner_range:
+            x, y = transform_to_coords(i, j)
             if platform[y][x] == 'O':
-                boulders_per_row[stopping_point_per_col[x]] += 1
-                stopping_point_per_col[x] += 1
+                platform[y][x] = '.'
+                stop_x, stop_y = transform_to_coords(stopping_points[j], j)
+                platform[stop_y][stop_x] = 'O'
+                stopping_points[j] += step
             if platform[y][x] == '#':
-                stopping_point_per_col[x] = y + 1
-    return sum((i + 1) * count for i, count in enumerate(reversed(boulders_per_row)))
+                stopping_points[j] = i + step
+    return platform
+
+
+def tilt_platform_north(platform):
+    return tilt_platform(platform, range(len(platform)), range(len(platform[0])), lambda i, j: (j, i))
+
+
+def tilt_platform_south(platform):
+    return tilt_platform(platform, range(len(platform))[::-1], range(len(platform[0])), lambda i, j: (j, i))
+
+
+def tilt_platform_west(platform):
+    return tilt_platform(platform, range(len(platform[0])), range(len(platform)), lambda i, j: (i, j))
+
+
+def tilt_platform_east(platform):
+    return tilt_platform(platform, range(len(platform[0]))[::-1], range(len(platform)), lambda i, j: (i, j))
 
 
 def tilt_platform_spin(platform):
-    stopping_point_per_col = [0 for _ in range(len(platform[0]))]
-    # North
-    for y in range(len(platform)):
-        for x in range(len(platform[0])):
-            if platform[y][x] == 'O':
-                platform[y][x] = '.'
-                platform[stopping_point_per_col[x]][x] = 'O'
-                stopping_point_per_col[x] += 1
-            if platform[y][x] == '#':
-                stopping_point_per_col[x] = y + 1
+    platform = tilt_platform_north(platform)
+    platform = tilt_platform_west(platform)
+    platform = tilt_platform_south(platform)
+    return tilt_platform_east(platform)
 
-    # West
-    stopping_point_per_row = [0 for _ in range(len(platform))]
-    for x in range(len(platform[0])):
-        for y in range(len(platform)):
-            if platform[y][x] == 'O':
-                platform[y][x] = '.'
-                platform[y][stopping_point_per_row[y]] = 'O'
-                stopping_point_per_row[y] += 1
-            if platform[y][x] == '#':
-                stopping_point_per_row[y] = x + 1
 
-    # South
-    stopping_point_per_col = [len(platform) - 1 for _ in range(len(platform[0]))]
-    for y in reversed(range(len(platform))):
-        for x in range(len(platform[0])):
-            if platform[y][x] == 'O':
-                platform[y][x] = '.'
-                platform[stopping_point_per_col[x]][x] = 'O'
-                stopping_point_per_col[x] -= 1
-            if platform[y][x] == '#':
-                stopping_point_per_col[x] = y - 1
-
-    # East
-    stopping_point_per_row = [len(platform[0]) - 1 for _ in range(len(platform))]
-    for x in reversed(range(len(platform[0]))):
-        for y in range(len(platform)):
-            if platform[y][x] == 'O':
-                platform[y][x] = '.'
-                platform[y][stopping_point_per_row[y]] = 'O'
-                stopping_point_per_row[y] -= 1
-            if platform[y][x] == '#':
-                stopping_point_per_row[y] = x - 1
-
-    return platform
+def score_platform_load(platform):
+    return sum((i + 1) * sum(1 if tile == 'O' else 0 for tile in row) for i, row in enumerate(reversed(platform)))
 
 
 def part2(platform):
@@ -77,11 +59,11 @@ def part2(platform):
             cycle_depth = ((1000000000 - memo[hashable_puzzle]) % (i - memo[hashable_puzzle]))
             return step_to_load[memo[hashable_puzzle] + cycle_depth - 1]
         memo[hashable_puzzle] = i
-        step_to_load[i] = sum((i + 1) * sum(1 if tile == 'O' else 0 for tile in row) for i, row in enumerate(reversed(platform)))
+        step_to_load[i] = score_platform_load(platform)
 
 
 platform = load_input()
-print(f"Part 1: {tilt_platform(platform)}")
+print(f"Part 1: {score_platform_load(tilt_platform_north(platform))}")
 print(f"Part 2: {part2(platform)}")
 
 
