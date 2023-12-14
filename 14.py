@@ -1,5 +1,3 @@
-
-
 def load_input():
     with open('in14', 'r') as in_stream:
         return [list(line.strip()) for line in in_stream.readlines()]
@@ -62,9 +60,5 @@ def part2(platform):
         step_to_load[i] = score_platform_load(platform)
 
 
-platform = load_input()
-print(f"Part 1: {score_platform_load(tilt_platform_north(platform))}")
-print(f"Part 2: {part2(platform)}")
-
-
-
+print(f"Part 1: {score_platform_load(tilt_platform_north(load_input()))}")
+print(f"Part 2: {part2(load_input())}")
